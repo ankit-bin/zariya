@@ -1,0 +1,10 @@
+# Ignore environment variables
+.env
+.env.local
+.env*.local
+
+# Ignore Node.js modules
+node_modules/
+
+# Ignore log files
+*.log
