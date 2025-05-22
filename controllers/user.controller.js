@@ -67,8 +67,8 @@ export const login = async (req, res) => {
            role: user.role,
            profile:user.profile,
        }
-
-       return res.status(200).cookie("token", token, {maxAge: 24 * 60 * 60 * 1000, httpOnly: true, sameSite: "Strict", secure: true}).json({ message: `welcome back ${user.fullname} `,user,success:true });
+//YAHA CHANGE KIYA GAYA HAI , TOKEN KO , RESPONSE MAI BHI SEND KIYA GAYA HAI ..! 
+       return res.status(200).cookie("token", token, {maxAge: 24 * 60 * 60 * 1000, httpOnly: true, sameSite: "Strict", secure: true}).json({ message: `welcome back ${user.fullname} `,token,user,success:true });
    } catch (error) {
            
            return res.status(500).json({ message: "login time error aya hai catch block wala ",success:false });

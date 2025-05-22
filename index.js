@@ -21,7 +21,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser()); 
 
 const corsOptions = {
-  origin: "", ///Flutter app url
+  origin: "", ///kotlin app url
     credentials: true,
 }
 app.use(cors(corsOptions)); 
@@ -37,7 +37,7 @@ app.use("/api/v1/company", companyRoute);
 app.use("/api/v1/job", jobRoute);
 app.use("/api/v1/application", applicationRoute);
 
-
+//
 
 
 

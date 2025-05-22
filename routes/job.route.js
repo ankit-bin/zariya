@@ -10,7 +10,7 @@ router.get('/all', getAllJobs);
 
 router.get('/recruiter', isAuthenticated, getRecruiterJobs);
 
-// Route to update a job
+// Route to update a job (recruter kr sakta hai )
 router.put('/update/:jobId', isAuthenticated, updateJob);
 
 // Route to delete a job
