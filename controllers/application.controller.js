@@ -115,7 +115,16 @@ export const createApplication = async (req, res) => {
 //recruiter ka sara applicants  ,uska uss particular job ka
 export const getJobApplications = async (req, res) => {
     try {
-        const { jobId } = req.params;
+        const { jobId, status } = req.params;
+
+        // Validate status parameter
+        const validStatuses = ['applied', 'approved', 'hired', 'rejected'];
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({
+                message: "Invalid status. Must be one of: applied, approved, hired,rejected",
+                success: false
+            });
+        }
 
         // Check if user is a recruiter
         const user = await User.findById(req.id);
@@ -146,12 +155,16 @@ export const getJobApplications = async (req, res) => {
             });
         }
 
-        // Get all applications for this job
-        const applications = await Application.find({ jobId })
-            .populate('appliedBy', 'fullname email phoneNumber role');
+        // Get applications for this job with the specified status
+        const applications = await Application.find({ 
+            jobId,
+            status: status 
+        }).populate('appliedBy', 'fullname email phoneNumber role');
 
         return res.status(200).json({
+            message: `Successfully retrieved ${status} applications`,
             applications,
+            count: applications.length,
             success: true
         });
 

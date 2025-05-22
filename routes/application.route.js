@@ -14,7 +14,8 @@ const router = express.Router();
 router.post('/create', isAuthenticated, createApplication);
 
 // Get all applications for a specific job (for recruiters)
-router.get('/job/:jobId', isAuthenticated, getJobApplications);
+//yaha pr change kiya gaya hai 3rd time change hai 
+router.get('/job/:jobId/:status', isAuthenticated, getJobApplications);
 
 // Get all applications submitted by a user (for helpers and self-workers)
 router.get('/user', isAuthenticated, getUserApplications);
