@@ -17,20 +17,47 @@ export const register = async (req, res) => {
           return res.status(400).json({ message: "User already exists",success:false });
       }
       const hashedPassword = await bcrypt.hash(password, 10);
-      await User.create({
+      const newUser = await User.create({
           fullname,
           email,
           phoneNumber,
           password: hashedPassword,
           role
       });
-        return res.status(201).json({ message: "account created successfully",success:true });
+
+      // Generate JWT token for automatic login
+      const tokenData = {
+          userId: newUser._id,
+      };
+      const token = jwt.sign(tokenData, process.env.SECRET_KEY, { expiresIn: "1d" });
+
+      const userData = {
+          _id: newUser._id,
+          fullname: newUser.fullname,
+          email: newUser.email,
+          phoneNumber: newUser.phoneNumber,
+          role: newUser.role,
+          profile: newUser.profile,
+      }
+
+      return res.status(201)
+          .cookie("token", token, {
+              maxAge: 24 * 60 * 60 * 1000,
+              httpOnly: true,
+              sameSite: "Strict",
+              secure: true
+          })
+          .json({ 
+              message: "Account created and logged in successfully",
+              token,
+              user: userData,
+              success: true 
+          });
   } catch (error) {
-   
        console.log(error);
        return res.status(500).json({ message: "Registration error",success:false }); 
-   
-  }}
+  }
+}
 
 
 //login user 
