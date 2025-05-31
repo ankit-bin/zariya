@@ -1,6 +1,33 @@
 import {Company} from "../models/company.model.js";
 import {User} from "../models/user.model.js";
+import { searchLocation, validateLocation } from "../utils/map.js";
 
+// Add new endpoint for location suggestions
+export const getLocationSuggestions = async (req, res) => {
+    try {
+        const { query } = req.query;
+        
+        if (!query) {
+            return res.status(400).json({ 
+                message: "Search query is required",
+                success: false 
+            });
+        }
+
+        const suggestions = await searchLocation(query);
+        
+        return res.status(200).json({
+            suggestions,
+            success: true
+        });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ 
+            message: "Error fetching location suggestions",
+            success: false 
+        });
+    }
+};
 
 export const registerCompany = async (req, res) => {
     try {
@@ -28,10 +55,26 @@ export const registerCompany = async (req, res) => {
             return res.status(400).json({ message: "Company already exists" });
         }
 
+        // Validate location if provided
+        let validatedLocation = null;
+        if (location) {
+            validatedLocation = await validateLocation(location);
+            if (!validatedLocation) {
+                return res.status(400).json({ 
+                    message: "Invalid location provided",
+                    success: false 
+                });
+            }
+        }
+
         company = await Company.create({
             name: companyName,
             description,
-            location,
+            location: validatedLocation ? {
+                type: String,
+                lat: validatedLocation.lat,
+                lon: validatedLocation.lon
+            } : location,
             website,
             userid: req.id
         });
@@ -68,13 +111,29 @@ export const updateCompany = async (req, res) => {
             }
         }
 
+        // Validate location if provided
+        let validatedLocation = null;
+        if (location && location !== company.location) {
+            validatedLocation = await validateLocation(location);
+            if (!validatedLocation) {
+                return res.status(400).json({ 
+                    message: "Invalid location provided",
+                    success: false 
+                });
+            }
+        }
+
         // Update the company
         const updatedCompany = await Company.findByIdAndUpdate(
             company._id,
             {
                 name: companyName || company.name,
                 description: description || company.description,
-                location: location || company.location,
+                location: validatedLocation ? {
+                    type: String,
+                    lat: validatedLocation.lat,
+                    lon: validatedLocation.lon
+                } : (location || company.location),
                 website: website || company.website
             },
             { new: true }

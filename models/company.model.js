@@ -12,8 +12,11 @@ const companySchema = new mongoose.Schema({
     },
     location: {
         type: String,
-        //required: true,
+        lat: String,
+        lon: String
+
     },
+   
     website: {
         type: String,
        // required: true,
