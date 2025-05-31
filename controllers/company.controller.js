@@ -1,6 +1,7 @@
 import {Company} from "../models/company.model.js";
 import {User} from "../models/user.model.js";
 import { searchLocation, validateLocation } from "../utils/map.js";
+import { uploadToCloudinary } from '../utils/cloudinary.js';
 
 // Add new endpoint for location suggestions
 export const getLocationSuggestions = async (req, res) => {
@@ -96,6 +97,7 @@ export const registerCompany = async (req, res) => {
 export const updateCompany = async (req, res) => {
     try {
         const { companyName, description, location, website } = req.body;
+        const logoFile = req.body.logo; // This will be base64 string from Kotlin
 
         // Find the company using user ID
         const company = await Company.findOne({ userid: req.id });
@@ -123,6 +125,19 @@ export const updateCompany = async (req, res) => {
             }
         }
 
+        // Upload logo if provided
+        let logoUrl = company.logo;
+        if (logoFile) {
+            try {
+                logoUrl = await uploadToCloudinary(logoFile);
+            } catch (error) {
+                return res.status(400).json({
+                    message: "Failed to upload logo",
+                    success: false
+                });
+            }
+        }
+
         // Update the company
         const updatedCompany = await Company.findByIdAndUpdate(
             company._id,
@@ -134,7 +149,8 @@ export const updateCompany = async (req, res) => {
                     lat: validatedLocation.lat,
                     lon: validatedLocation.lon
                 } : (location || company.location),
-                website: website || company.website
+                website: website || company.website,
+                logo: logoUrl
             },
             { new: true }
         );

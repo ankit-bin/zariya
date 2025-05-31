@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema({
         enum: ["recruiter", "helper","selfworker"],
         required: true,
     },
-   //currently use nhi kr rha isko..!
+   
     profilePicture:{
         type: String,
         default:""

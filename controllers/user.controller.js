@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import {User} from "../models/user.model.js";
 import jwt from "jsonwebtoken";
+import { uploadToCloudinary } from '../utils/cloudinary.js';
 
 import dotenv from "dotenv";
 
@@ -122,38 +123,55 @@ export const logout = async (req, res) => {
 
 export const UpdateProfile = async (req, res) => {
    try {
-       const { fullname, email, phoneNumber,} = req.body;
+       const { fullname, email, phoneNumber } = req.body;
+       const profilePicture = req.body.profilePicture; // This will be base64 string from Kotlin
 
-       const userId = req.id; /// middleware se aaya(auth middleware se aaya)
+       const userId = req.id; // from auth middleware
 
        let user = await User.findById(userId);
        if (!user) {
-           return res.status(400).json({ message: "User not found",success:false });
+           return res.status(400).json({ message: "User not found", success: false });
        }
 
-       //update user profile
+       // Upload profile picture if provided
+       if (profilePicture) {
+           try {
+               const profilePictureUrl = await uploadToCloudinary(profilePicture);
+               user.profilePicture = profilePictureUrl;
+           } catch (error) {
+               return res.status(400).json({
+                   message: "Failed to upload profile picture",
+                   success: false
+               });
+           }
+       }
 
-       if(fullname) user.fullname = fullname;
-       if(email) user.email = email;
-       if(phoneNumber) user.phoneNumber = phoneNumber;
-       
-
-       
+       // Update other user details
+       if (fullname) user.fullname = fullname;
+       if (email) user.email = email;
+       if (phoneNumber) user.phoneNumber = phoneNumber;
 
        await user.save();
+       
        user = {
            _id: user._id,
            fullname: user.fullname,
            email: user.email,
            phoneNumber: user.phoneNumber,
            role: user.role,
-          
+           profilePicture: user.profilePicture
        }
-       return res.status(200).json({ message: "Profile updated successfully", user,success:true });
 
-
-      
+       return res.status(200).json({ 
+           message: "Profile updated successfully", 
+           user,
+           success: true 
+       });
    } catch (error) {
-       return res.status(500).json({ message: "Profile update error",success:false });
+       console.error('Profile update error:', error);
+       return res.status(500).json({ 
+           message: "Profile update error",
+           success: false 
+       });
    }
 }
